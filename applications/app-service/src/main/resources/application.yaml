@@ -12,11 +12,11 @@ spring:
   profiles:
     include: null
   flyway:
-    url: jdbc:postgresql://localhost:5432/onboarding_nequi
+    url: jdbc:postgresql://172.19.107.156:5432/onboarding_nequi_db
     locations: classpath:db/postgres/migration
   r2dbc:
-    database: "onboarding_nequi"
-    host: "localhost"
+    database: "onboarding_nequi_db"
+    host: "172.19.107.156"
     port: 5432
     username: "postgres"
     password: "postgres"

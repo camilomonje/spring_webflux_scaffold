@@ -12,6 +12,7 @@ public enum ErrorCode {
     B404000("B404-000", 404, "Not Found - element not found"),
     B409000("B409-000", 409, "Conflict"),
     B409001("B409-001", 409, "Conflict: User already exists"),
+    B409002("B409-002", 409, "Conflict: You can't filter by id and value at the same time"),
     E500000("E500-000", 500, "Internal Server Error");
 
 
