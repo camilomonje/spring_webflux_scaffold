@@ -13,13 +13,7 @@ public class OnboardingException extends RuntimeException {
         this.error = error;
         this.object = null;
     }
-
-    public OnboardingException(ErrorCode error, String message, Throwable cause) {
-        super(message, cause);
-        this.error = error;
-        this.object = null;
-    }
-    public OnboardingException(ErrorCode errorCode) {
+        public OnboardingException(ErrorCode errorCode) {
         super(errorCode.getLog());
         this.error = errorCode;
         this.object = null;
