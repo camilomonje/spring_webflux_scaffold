@@ -12,19 +12,26 @@ spring:
   profiles:
     include: null
   flyway:
-    url: jdbc:postgresql://172.19.107.156:5432/onboarding_nequi_db
-    locations: classpath:db/postgres/migration
+    url: "jdbc:postgresql://localhost:5432/onboarding_nequi_db"
+    locations: "classpath:db/postgres/migration"
   r2dbc:
     database: "onboarding_nequi_db"
-    host: "172.19.107.156"
+    host: "localhost"
     port: 5432
     username: "postgres"
     password: "postgres"
     schema: "public"
+  redis:
+    host: "localhost"
+    port: 6379
 adapter:
   restconsumer:
     timeout: 5000
     url: "https://reqres.in/api/users"
+  sqs:
+    region: "us-east-1"
+    queueUrl: "http://localhost:4566/000000000000/sqs_q_onboarding"
+    endpoint: "http://localhost:4566"
 management:
   health:
     circuitbreakers:
@@ -60,3 +67,16 @@ resilience4j:
         waitDurationInOpenState: "10s"
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+aws:
+  region: "us-east-1"
+  dynamodb:
+    endpoint: "http://localhost:4566"
+entrypoint:
+  sqs:
+    region: "us-east-1"
+    endpoint: "http://localhost:4566"
+    queueUrl: "http://localhost:4566/000000000000/sqs_q_onboarding"
+    waitTimeSeconds: 20
+    maxNumberOfMessages: 10
+    visibilityTimeout: 10000
+    numberOfThreads: 1

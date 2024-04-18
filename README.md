@@ -1,47 +1,46 @@
-# Proyecto Base Implementando Clean Architecture
+# Onboarding Taller Webflux
 
-## Antes de Iniciar
+[Link Taller.](https://bancolombia.sharepoint.com/:w:/r/teams/Nequi-Backend/_layouts/15/Doc.aspx?sourcedoc=%7B0905690A-8754-43F5-8A01-622B7A3DFC6D%7D&file=Onboarding%20-%20Nuevo%20Stack%20Tecnologico.docx&action=default&mobileredirect=true)
 
-Empezaremos por explicar los diferentes componentes del proyectos y partiremos de los componentes externos, continuando con los componentes core de negocio (dominio) y por último el inicio y configuración de la aplicación.
+## Primeros pasos
 
-Lee el artículo [Clean Architecture — Aislando los detalles](https://medium.com/bancolombia-tech/clean-architecture-aislando-los-detalles-4f9530f35d7a)
+Desde la consola nos situamos en la carpeta del proyecto donde esta el archivo docker-compose.yml, y corremos el siguiente comando:
+```bash
+docker compose up -d
+```
 
-# Arquitectura
+Al hacer esto verificamos con el siguiente comando si ya se agregaron los contenedores de localstack, postgres y redis.
 
-![Clean Architecture](https://miro.medium.com/max/1400/1*ZdlHz8B0-qu9Y-QO3AXR_w.png)
+```bash
+docker ps
+```
+Al tener esto se debe agregar la cola de SQS y la tabla en Dynamo con los siguientes comandos.
+```bash
+aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+  --table-name Users \
+  --attribute-definitions AttributeName=id,AttributeType=N \
+  --key-schema AttributeName=id,KeyType=HASH \
+  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 
-## Domain
 
-Es el módulo más interno de la arquitectura, pertenece a la capa del dominio y encapsula la lógica y reglas del negocio mediante modelos y entidades del dominio.
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name sqs_q_onboarding
+```
 
-## Usecases
+## INICIO
 
-Este módulo gradle perteneciente a la capa del dominio, implementa los casos de uso del sistema, define lógica de aplicación y reacciona a las invocaciones desde el módulo de entry points, orquestando los flujos hacia el módulo de entities.
+Se inicia el proyecto en el IDE de su preferencia, al ser la primera vez el automaticamente crea la tabla en postgres gracias a la libreria de FlyWay Migration.
 
-## Infrastructure
+## SERVICIOS
 
-### Helpers
+### SAVE USER
+curl --location --request POST 'http://localhost:8080/api/users/1'
 
-En el apartado de helpers tendremos utilidades generales para los Driven Adapters y Entry Points.
+### GET USER BY ID
+curl --location 'http://localhost:8080/api/users?id=1'
 
-Estas utilidades no están arraigadas a objetos concretos, se realiza el uso de generics para modelar comportamientos
-genéricos de los diferentes objetos de persistencia que puedan existir, este tipo de implementaciones se realizan
-basadas en el patrón de diseño [Unit of Work y Repository](https://medium.com/@krzychukosobudzki/repository-design-pattern-bc490b256006)
+### GET USER BY VALUE
+curl --location 'http://localhost:8080/api/users?value=ge'
 
-Estas clases no puede existir solas y debe heredarse su compartimiento en los **Driven Adapters**
+### GET USERS
+curl --location 'http://localhost:8080/api/users'
 
-### Driven Adapters
-
-Los driven adapter representan implementaciones externas a nuestro sistema, como lo son conexiones a servicios rest,
-soap, bases de datos, lectura de archivos planos, y en concreto cualquier origen y fuente de datos con la que debamos
-interactuar.
-
-### Entry Points
-
-Los entry points representan los puntos de entrada de la aplicación o el inicio de los flujos de negocio.
-
-## Application
-
-Este módulo es el más externo de la arquitectura, es el encargado de ensamblar los distintos módulos, resolver las dependencias y crear los beans de los casos de use (UseCases) de forma automática, inyectando en éstos instancias concretas de las dependencias declaradas. Además inicia la aplicación (es el único módulo del proyecto donde encontraremos la función “public static void main(String[] args)”.
-
-**Los beans de los casos de uso se disponibilizan automaticamente gracias a un '@ComponentScan' ubicado en esta capa.**

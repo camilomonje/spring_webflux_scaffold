@@ -1,8 +1,7 @@
 package co.com.nequi.usecase.user;
 
 import co.com.nequi.model.user.User;
-import co.com.nequi.model.user.gateways.SingleUserRepository;
-import co.com.nequi.model.user.gateways.UserRepository;
+import co.com.nequi.model.user.gateways.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +27,15 @@ class UserUseCaseTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private UserDynamoRepository userDynamoRepository;
+
+    @Mock
+    private RedisRepository redisRepository;
+
+    @Mock
+    private SQSSenderRepository sqsSenderRepository;
+
     @InjectMocks
     private UserUseCase userUseCase;
 
@@ -51,6 +59,7 @@ class UserUseCaseTest {
         when(singleUserRepository.getSingleUser(anyInt())).thenReturn(Mono.just(user));
         when(userRepository.findByEmail(anyString())).thenReturn(Mono.empty());
         when(userRepository.save(any())).thenReturn(Mono.just(user));
+        when(sqsSenderRepository.sendEvent(any())).thenReturn(Mono.just("user sent"));
 
         create(userUseCase.saveUser(1))
                 .expectSubscription()
@@ -74,7 +83,9 @@ class UserUseCaseTest {
     @Test
     void getUserById() {
 
+        when(redisRepository.getById(anyInt())).thenReturn(Mono.empty());
         when(userRepository.findById(anyInt())).thenReturn(Mono.just(user));
+        when(redisRepository.save(any())).thenReturn(Mono.just(user));
 
         create(userUseCase.getUserById(1))
                 .expectSubscription()
@@ -87,6 +98,7 @@ class UserUseCaseTest {
     void getUsers() {
 
         when(userRepository.findAll()).thenReturn(Flux.just(user));
+        when(redisRepository.save(any())).thenReturn(Mono.just(user));
 
         create(userUseCase.getUsers())
                 .expectSubscription()
@@ -100,6 +112,17 @@ class UserUseCaseTest {
         when(userRepository.getUsersByFirstName(anyString())).thenReturn(Flux.just(user));
 
         create(userUseCase.getUsersByFirstName("a"))
+                .expectSubscription()
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+    @Test
+    void saveUserUpperCase() {
+
+        when(userDynamoRepository.save(any())).thenReturn(Mono.just(user));
+
+        create(userUseCase.saveUserUpperCase(user))
                 .expectSubscription()
                 .expectNextCount(1)
                 .verifyComplete();
